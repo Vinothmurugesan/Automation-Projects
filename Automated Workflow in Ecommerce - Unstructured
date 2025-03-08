@@ -1,0 +1,129 @@
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ecommerce_Project
+{
+    public class LoginPage
+    {
+        IWebDriver driver;
+        WebDriverWait wait;
+
+        [SetUp]
+        public void SetUpMethod()
+        {
+            driver = new ChromeDriver();
+
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
+
+            driver.Manage().Window.Maximize();
+
+            driver.Navigate().GoToUrl("https://rahulshettyacademy.com/loginpagePractise/");
+        }
+
+        [Test]
+        public void Login()
+        {
+            driver.FindElement(By.Id("username")).SendKeys("rahulshettyacademy");
+
+            driver.FindElement(By.Id("password")).SendKeys("learning");
+
+            driver.FindElement(By.XPath("//form[@id='login-form']/div[4]/div/label[2]/span[2]")).Click();
+
+            wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("okayBtn")));
+
+            driver.FindElement(By.Id("okayBtn")).Click();
+
+            IWebElement element = driver.FindElement(By.XPath("//select[@class='form-control']"));
+
+            SelectElement s = new SelectElement(element);
+
+            s.SelectByIndex(2);
+
+            driver.FindElement(By.XPath("//form[@id='login-form']/div[6]/label[1]/span[1]")).Click();
+
+            driver.FindElement(By.Id("signInBtn")).Click();
+
+            IWebElement ProductAdd =  wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.XPath("//button[text()='Add ']")));
+           
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+            js.ExecuteScript("arguments[0].scrollIntoView(true);", ProductAdd);
+
+            IList<IWebElement> ProductList = driver.FindElements(By.XPath("//button[text()='Add ']"));
+
+            ProductList[0].Click();
+
+            ProductList[3].Click();
+
+            IWebElement CheckOutBtn = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.PartialLinkText("Checkout ( 2 )")));
+
+            IJavaScriptExecutor js2 = (IJavaScriptExecutor)driver;
+
+            js2.ExecuteScript("arguments[0].scrollIntoView(true);", CheckOutBtn);
+
+            driver.FindElement(By.PartialLinkText("Checkout ( 2 )")).Click();
+
+            String item1 = driver.FindElement(By.XPath("//a[text()='iphone X']")).Text;
+
+            String item2 = driver.FindElement(By.XPath("//a[text()='Blackberry']")).Text;
+
+            Assert.That(item1, Is.EqualTo("iphone X")); //New method
+
+            Assert.AreEqual(item2, "Blackberry"); //Classic method
+
+            IList<IWebElement> totalvalue1 = driver.FindElements(By.XPath("//strong[text()='₹. 100000']"));
+
+            IList<IWebElement> totalvalue2 = driver.FindElements(By.XPath("//strong[text()='₹. 50000']"));
+
+            String ItemOnePrice = totalvalue1[1].Text;
+
+            String ItemTwoPrice = totalvalue2[1].Text;
+
+            long PriceOne = long.Parse(ItemOnePrice.Replace("₹. ", "").Trim());
+
+            long PriceTwo = long.Parse(ItemTwoPrice.Replace("₹. ", "").Trim());
+
+            long TotalValue = PriceOne + PriceTwo;
+
+            Assert.That(TotalValue, Is.EqualTo(150000));
+
+            driver.FindElement(By.ClassName("btn-success")).Click();
+
+            driver.FindElement(By.Id("country")).SendKeys("uk");
+
+            IList<IWebElement> Countryelements = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.XPath("//div[@class='suggestions']/ul/li/a")));
+
+            for (int i=0; i<Countryelements.Count; i++)
+            {
+                if (Countryelements[i].Text.Equals("Ukraine"))
+                {
+                    Countryelements[i].Click();
+                }
+            }
+
+            driver.FindElement(By.XPath("//a[text()='term & Conditions']")).Click();
+
+            driver.FindElement(By.XPath("//button[text()='Close']")).Click();
+
+            driver.FindElement(By.XPath("//input[@value='Purchase']")).Click();
+
+            string successmsg = driver.FindElement(By.CssSelector("div[class='alert alert-success alert-dismissible']")).Text;
+
+            Assert.That(successmsg, Is.EqualTo("×\r\nSuccess! Thank you! Your order will be delivered in next few weeks :-)."));
+
+            
+        }
+        [TearDown]
+        public void TearDownMethod()
+        {
+            //driver.Quit();
+        }
+    }
+}
